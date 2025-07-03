@@ -1,5 +1,5 @@
 import { Graph } from "@langchain/langgraph";
-import { chat } from "./llm.js";
+import { chat } from "../llm.js";
 
 const nodes = {
   input: ({ messages }) => messages,

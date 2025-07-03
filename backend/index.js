@@ -1,5 +1,5 @@
 import { scrapeJobs } from "./scraper.js";
-import { matchJobsToSkills } from "./llm.js";
+import { matchJobsToSkills } from "../llm.js";
 
 const jobs = await scrapeJobs();
 console.log(`Scraped ${jobs.length} jobs.`);
