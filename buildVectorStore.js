@@ -6,7 +6,7 @@ import { FaissStore } from "langchain/vectorstores/faiss";
 export async function buildVectorStore() {
   const jobs = await scrapeJobs();
 
-  const allTexts = jobs.map((job) => job.description).filter(Boolean);
+  const allTexts = jobs.map(job => job.description).filter(Boolean);
 
   const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
@@ -20,19 +20,9 @@ export async function buildVectorStore() {
   }
 
   const embeddings = new OpenAIEmbeddings();
-
   const vectorStore = await FaissStore.fromTexts(chunks, [], embeddings);
 
   await vectorStore.save("faiss.index");
 
-  const retriever = vectorStore.asRetriever();
-
-  // Query for relevant docs
-  const relevantDocs = await retriever.getRelevantDocuments("JavaScript React Node.js");
-  
-  console.log("Top relevant docs:", relevantDocs);
-
-  // Return vector store and maybe docs if you want to use them later
-  return { vectorStore, relevantDocs };
+  return vectorStore;
 }
-

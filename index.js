@@ -1,34 +1,29 @@
-import { scrapeJobs } from "./scraper.js";
+import { buildVectorStore } from "./buildVectorStore.js";
+import { answerQuery } from "./query.js";
 
 async function main() {
-  const jobs = await scrapeJobs();
+  const action = process.argv[2];
 
-  if (jobs.length === 0) {
-    console.log("No jobs found.");
-    return;
+  if (action === "build") {
+    // Build the vector store from scraped jobs
+    await buildVectorStore();
+  } else if (action === "query") {
+    // Run query from command line args after "query"
+    const query = process.argv.slice(3).join(" ");
+    if (!query) {
+      console.error("Please provide a query after 'query' command.");
+      process.exit(1);
+    }
+    const answer = await answerQuery(query);
+    console.log("Answer:\n", answer);
+  } else {
+    console.log(`Usage:
+    node index.js build        # scrape jobs & build vector store
+    node index.js query QUERY  # query the RAG system`);
   }
-
-  console.log(`Scraped ${jobs.length} jobs from Arbeitnow API.\n`);
-
-  // Print top 5 job listings (or fewer if less)
-  const topJobs = jobs.slice(0, 10);
-
-  topJobs.forEach((job, i) => {
-    console.log(`Job #${i + 1}:`);
-    console.log(`Title: ${job.title}`);
-    console.log(`Company: ${job.company}`);
-    console.log(`Location: ${job.location}`);
-    console.log(`Link: ${job.link}`);
-    console.log(`Description (snippet): ${job.description.substring(0, 200)}...`);
-    console.log(`Tags: ${job.tags.join(", ")}`);
-    console.log("---------------------------------------------------");
-  });
 }
 
-main().catch((err) => {
-  console.error("Error in main execution:", err);
-});
-
+main().catch(console.error);
 
 
 
