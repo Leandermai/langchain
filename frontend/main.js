@@ -6,16 +6,33 @@ document.getElementById('bewerber-form').addEventListener('submit', async (e) =>
   const email = document.getElementById('email').value;
   const skills = document.getElementById('skills').value;
   const bereich = document.getElementById('bereich').value;
+  const profil = document.getElementById('profil').value;
 
-  // Hier könnte man skills/bereich an den Scraper schicken, aktuell werden alle Jobs geladen
-  const res = await fetch('/api/jobs');
+  // Skills und Bereich an die API übergeben
+  const res = await fetch(`/api/jobs?skills=${encodeURIComponent(skills)}&bereich=${encodeURIComponent(bereich)}`);
   const jobs = await res.json();
 
   const jobsList = document.getElementById('jobs-list');
   jobsList.innerHTML = '';
   jobs.forEach((job, idx) => {
     const li = document.createElement('li');
-    li.innerHTML = `<strong>${job.title}</strong><br><button class="show-desc">Jobbeschreibung anzeigen</button><div class="desc" style="display:none;margin-top:8px;">${job.description || 'Keine Beschreibung verfügbar.'}</div><button class="apply-btn" style="display:none;margin-top:8px;">Bewerbung schreiben</button>`;
+    // Kopfbereich mit allen Metadaten
+    let metaHtml = '';
+    if (job.company) metaHtml += `<b>Firma:</b> ${job.company}<br>`;
+    if (job.location) metaHtml += `<b>Standort:</b> ${job.location}<br>`;
+    if (job.salary) metaHtml += `<b>Gehalt:</b> ${job.salary}<br>`;
+    if (job.tags && job.tags.length) metaHtml += `<b>Tags:</b> ${job.tags.join(', ')}<br>`;
+    if (job.date) metaHtml += `<b>Datum:</b> ${job.date}<br>`;
+    if (job.link) metaHtml += `<a href='${job.link}' target='_blank'>Zur Ausschreibung</a><br>`;
+
+    // Neue Darstellung mit Abschnitten
+    let descHtml = '';
+    if (job.aufgaben) descHtml += `<b>Aufgaben:</b><br><ul>` + job.aufgaben.split(/\n|•|-/).filter(x=>x.trim()).map(x=>`<li>${x.trim()}</li>`).join('') + '</ul>';
+    if (job.profil) descHtml += `<b>Profil:</b><br><ul>` + job.profil.split(/\n|•|-/).filter(x=>x.trim()).map(x=>`<li>${x.trim()}</li>`).join('') + '</ul>';
+    if (job.benefits) descHtml += `<b>Benefits:</b><br><ul>` + job.benefits.split(/\n|•|-/).filter(x=>x.trim()).map(x=>`<li>${x.trim()}</li>`).join('') + '</ul>';
+    if (!descHtml) descHtml = job.description || 'Keine Beschreibung verfügbar.';
+
+    li.innerHTML = `<strong>${job.title}</strong><br>${metaHtml}<button class="show-desc">Jobbeschreibung anzeigen</button><div class="desc" style="display:none;margin-top:8px;">${descHtml}</div><button class="apply-btn" style="display:none;margin-top:8px;">Bewerbung schreiben</button>`;
     li.querySelector('.show-desc').onclick = function() {
       const desc = li.querySelector('.desc');
       const applyBtn = li.querySelector('.apply-btn');
@@ -27,19 +44,19 @@ document.getElementById('bewerber-form').addEventListener('submit', async (e) =>
         applyBtn.style.display = 'none';
       }
     };
-    li.querySelector('.apply-btn').onclick = () => selectJob(job, name, email);
+    li.querySelector('.apply-btn').onclick = () => selectJob(job, name, email, profil);
     jobsList.appendChild(li);
   });
   document.getElementById('jobs-section').style.display = 'block';
 });
 
-async function selectJob(job, name, email) {
+async function selectJob(job, name, email, profil) {
   document.getElementById('bewerbung-section').style.display = 'none';
-  // Sende Name und Email mit an das Backend (optional, Backend muss angepasst werden)
+  // Sende Name, Email und Profil mit an das Backend
   const res = await fetch('/api/bewerbung', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ job, name, email })
+    body: JSON.stringify({ job, name, email, profil })
   });
   const data = await res.json();
   document.getElementById('bewerbung-text').textContent = data.letter || 'Fehler beim Generieren.';

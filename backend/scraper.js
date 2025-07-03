@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { extractJobSections } from "./rag.js";
 
 export async function scrapeJobs() {
   const url = "https://remoteok.com/remote-dev-jobs";
@@ -11,11 +12,16 @@ export async function scrapeJobs() {
   const $ = cheerio.load(data);
 
   const jobs = [];
-  // Hole die ersten 5 Jobs für Demo-Zwecke
-  const jobRows = $("tr.job").slice(0, 5);
+  // Hole die ersten 20 Jobs für bessere Abdeckung
+  const jobRows = $("tr.job").slice(0, 20);
   for (let i = 0; i < jobRows.length; i++) {
     const el = jobRows[i];
     const title = $(el).find("h2").text().trim();
+    const company = $(el).find("h3").text().trim();
+    const location = $(el).find("div.location").text().trim();
+    const tags = $(el).find(".tags .tag").map((i, tag) => $(tag).text().trim()).get();
+    const salary = $(el).find(".salary").text().trim();
+    const date = $(el).find("time").attr("datetime") || "";
     const link = $(el).attr("data-href") || $(el).find("a.preventLink").attr("href");
     let description = "";
     if (link) {
@@ -32,7 +38,19 @@ export async function scrapeJobs() {
       description = "Keine ausführliche Beschreibung gefunden.";
     }
     if (title) {
-      jobs.push({ title, description });
+      // RAG: Abschnitte extrahieren
+      const sections = extractJobSections(description);
+      jobs.push({
+        title,
+        company,
+        location,
+        tags,
+        salary,
+        date,
+        link: link ? (link.startsWith("http") ? link : `https://remoteok.com${link}`) : "",
+        description,
+        ...sections
+      });
     }
   }
   return jobs;

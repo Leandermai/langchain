@@ -18,8 +18,21 @@ app.use(express.static(path.join(__dirname, "../frontend")));
 // Jobs-API
 app.get("/api/jobs", async (req, res) => {
   try {
+    // Filter-Parameter aus Query lesen
+    const { skills = "", bereich = "" } = req.query;
+    const skillArr = skills.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+    const bereichArr = bereich.split(",").map(b => b.trim().toLowerCase()).filter(Boolean);
     const jobs = await scrapeJobs();
-    res.json(jobs);
+    // Filterung: Mindestens ein Skill ODER ein Bereich muss im Titel, Tags oder Beschreibung vorkommen
+    const filtered = jobs.filter(job => {
+      const text = [job.title, job.description, ...(job.tags||[])].join(" ").toLowerCase();
+      const skillMatch = skillArr.length === 0 ? false : skillArr.some(skill => text.includes(skill));
+      const bereichMatch = bereichArr.length === 0 ? false : bereichArr.some(bereich => text.includes(bereich));
+      // Wenn beide leer: alles anzeigen. Wenn nur eins gefüllt: darauf filtern. Wenn beide gefüllt: ODER-Verknüpfung.
+      if (skillArr.length === 0 && bereichArr.length === 0) return true;
+      return skillMatch || bereichMatch;
+    });
+    res.json(filtered);
   } catch (e) {
     res.status(500).json({ error: "Fehler beim Scrapen der Jobs." });
   }
@@ -27,14 +40,14 @@ app.get("/api/jobs", async (req, res) => {
 
 // Bewerbung-API
 app.post("/api/bewerbung", async (req, res) => {
-  const { job, name, email } = req.body;
+  const { job, name, email, profil } = req.body;
   if (!job || !name || !email) {
     return res.status(400).json({ error: "Fehlende Felder." });
   }
   // Prompt für das LLM
   const prompt = [
     { role: "system", content: "Du bist ein Bewerbungsassistent." },
-    { role: "user", content: `Schreibe ein Bewerbungsschreiben für die Stelle '${job.title}'. Name: ${name}, E-Mail: ${email}. Jobbeschreibung: ${job.description}` }
+    { role: "user", content: `Schreibe ein Bewerbungsschreiben für die Stelle '${job.title}'. Name: ${name}, E-Mail: ${email}.` + (profil ? ` Über mich: ${profil}.` : "") + ` Jobbeschreibung: ${job.description}` }
   ];
   try {
     const response = await chat.invoke(prompt);
