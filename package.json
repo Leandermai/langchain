@@ -13,7 +13,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/Leandermai/langchain/issues"
   },
@@ -25,6 +25,8 @@
     "@langchain/langgraph": "^0.3.6",
     "axios": "^1.10.0",
     "cheerio": "^1.1.0",
-    "dotenv": "^17.0.1"
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0"
   }
 }

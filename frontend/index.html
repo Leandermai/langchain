@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bewerbungs-Agent</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Bewerbungs-Agent</h1>
+    <form id="bewerber-form">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" placeholder="Max Mustermann" required />
+      <label for="email">E-Mail:</label>
+      <input type="email" id="email" name="email" placeholder="max@mustermann.de" required />
+      <label for="skills">Fähigkeiten (Komma-getrennt):</label>
+      <input type="text" id="skills" name="skills" placeholder="z.B. JavaScript, React, Node.js" required />
+      <label for="bereich">Gesuchter Bereich:</label>
+      <input type="text" id="bereich" name="bereich" placeholder="z.B. Frontend, Backend" required />
+      <button type="submit">Jobs suchen</button>
+    </form>
+    <div id="jobs-section" style="display:none;">
+      <h2>Gefundene Jobs</h2>
+      <ul id="jobs-list"></ul>
+    </div>
+    <div id="bewerbung-section" style="display:none;">
+      <h2>Bewerbungsschreiben</h2>
+      <pre id="bewerbung-text"></pre>
+      <button id="pdf-download">Als PDF herunterladen</button>
+    </div>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>
