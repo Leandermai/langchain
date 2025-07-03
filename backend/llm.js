@@ -1,11 +1,16 @@
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { ChatGroq } from "@langchain/groq";
-import { config } from "dotenv";
 
-config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: new URL("../.env", import.meta.url).pathname });
+
 
 export const chat = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
-  model: "llama-3.3-70b-versatile",
+  model: "llama-3-3-70b-versatile", 
 });
 
 // Hilfsfunktion für das Matching (optional, kann später erweitert werden)
