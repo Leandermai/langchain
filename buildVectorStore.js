@@ -1,12 +1,12 @@
 import { scrapeJobs } from "./scraper.js";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { FaissStore } from "langchain/vectorstores/faiss";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { FaissStore } from "@langchain/community/vectorstores/faiss";
 
 export async function buildVectorStore() {
   const jobs = await scrapeJobs();
 
-  const allTexts = jobs.map(job => job.description).filter(Boolean);
+  const allTexts = jobs.map((job) => job.description).filter(Boolean);
 
   const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
