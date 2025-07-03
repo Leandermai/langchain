@@ -87,3 +87,12 @@ txtBtn.addEventListener('click', () => {
     URL.revokeObjectURL(url);
   }, 100);
 });
+
+const response = await fetch("/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message: "Which job is best for a React developer?" }),
+});
+const data = await response.json();
+console.log(data.response);
+
