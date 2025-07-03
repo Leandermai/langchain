@@ -1,5 +1,6 @@
-import { Graph } from "@langchain/langgraph";
 import { chat } from "./llm.js";
+import { Graph } from "@langchain/langgraph";   // ✅
+
 
 const nodes = {
   input: ({ messages }) => messages,
@@ -12,3 +13,4 @@ const edges = {
 };
 
 export const graph = new Graph({ nodes, edges, entry: "input" });
+

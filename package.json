@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "langchain",
   "version": "1.0.0",
   "description": "Project to develop LLM and Agent with langchain",
@@ -13,14 +14,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Leandermai/langchain/issues"
   },
   "homepage": "https://github.com/Leandermai/langchain#readme",
   "dependencies": {
     "@langchain/community": "^0.3.47",
-    "@langchain/core": "^0.3.61",
+  "@langchain/core": "^0.3.61",
     "@langchain/groq": "^0.2.3",
     "@langchain/langgraph": "^0.3.6",
     "axios": "^1.10.0",
