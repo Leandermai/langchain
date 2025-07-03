@@ -1,0 +1,30 @@
+{
+  "name": "langchain",
+  "version": "1.0.0",
+  "description": "Project to develop LLM and Agent with langchain",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Leandermai/langchain.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Leandermai/langchain/issues"
+  },
+  "homepage": "https://github.com/Leandermai/langchain#readme",
+  "dependencies": {
+    "@langchain/community": "^0.3.47",
+    "@langchain/core": "^0.3.61",
+    "@langchain/groq": "^0.2.3",
+    "@langchain/langgraph": "^0.3.6",
+    "axios": "^1.10.0",
+    "cheerio": "^1.1.0",
+    "dotenv": "^17.0.1"
+  }
+}

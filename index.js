@@ -1,10 +1,13 @@
-import { graph } from "./graph.js";
+import { scrapeJobs } from "./scraper.js";
+import { matchJobsToSkills } from "./llm.js";
 
-const response = await graph.invoke({
-  messages: [{ role: "user", content: "Hello!" }],
-});
+const jobs = await scrapeJobs();
+console.log(`Scraped ${jobs.length} jobs.`);
 
-console.log(response);
+const skills = ["JavaScript", "React", "Node.js"];
+const result = await matchJobsToSkills(jobs.slice(0, 10), skills); // Limit for speed
+console.log("Top job matches:\n", result);
+
 
 
 
