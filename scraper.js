@@ -1,59 +1,50 @@
 import axios from "axios";
 import { load } from "cheerio";
 
-const BASE_URL = "https://remoteok.com";
-const JOBS_URL = `${BASE_URL}/remote-dev-jobs`;
+const API_URL = "https://remoteok.com/api"; // public API
 
-async function scrapeJobDescription(jobUrl) {
-  try {
-    const res = await axios.get(jobUrl, {
-      headers: {
-        // sometimes setting user-agent helps avoid blocks
-        "User-Agent": "Mozilla/5.0 (compatible; JobScraper/1.0)",
-      },
-    });
-    const $ = load(res.data);
-
-    // Inspect the job detail page to find the description selector.
-    // For RemoteOK, the job description is inside a div with class 'description'
-    const description = $(".description").text().trim();
-
-    return description;
-  } catch (error) {
-    console.error(`Error fetching job description from ${jobUrl}:`, error.message);
-    return "";
-  }
+// Helper to strip HTML tags from job descriptions
+function cleanDescription(html) {
+  if (!html) return "";
+  const $ = load(html);
+  return $.text().replace(/\s+/g, " ").trim();
 }
 
+// Main function to fetch and parse jobs
 export async function scrapeJobs() {
   try {
-    const res = await axios.get(JOBS_URL, {
+    const res = await axios.get(API_URL, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; JobScraper/1.0)",
       },
     });
-    const $ = cheerio.load(res.data);
-    const jobs = [];
 
-    $(".job").each((i, el) => {
-      const title = $(el).find("h2").text().trim();
-      const relativeLink = $(el).find("a.preventLink").attr("href");
-      if (!title || !relativeLink) return;
+    // First element is metadata, not a job
+    const jobData = res.data.slice(1);
 
-      const link = BASE_URL + relativeLink;
-      jobs.push({ title, link });
-    });
+    const jobs = jobData
+      .filter((job) => job.position || job.title)
+      .map((job) => {
+        const title = job.position || job.title;
+        const link = job.url;
+        const description = cleanDescription(job.description) || (job.tags?.join(", ") ?? "");
 
-    // For each job, scrape the full job description
-    for (const job of jobs) {
-      job.description = await scrapeJobDescription(job.link);
-    }
+        return {
+          title,
+          company: job.company || "",
+          location: job.location || "",
+          link,
+          description,
+          tags: job.tags || [],
+        };
+      });
+
+    console.log(`Scraped ${jobs.length} jobs.`);
+    console.log("Sample job:", jobs[0]);
 
     return jobs;
   } catch (error) {
-    console.error("Error fetching job listings:", error.message);
+    console.error("Error fetching jobs from RemoteOK API:", error.message);
     return [];
   }
 }
-
-
