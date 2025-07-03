@@ -11,7 +11,7 @@ async function main() {
   console.log(`Scraped ${jobs.length} jobs from Arbeitnow API.\n`);
 
   // Print top 5 job listings (or fewer if less)
-  const topJobs = jobs.slice(0, 5);
+  const topJobs = jobs.slice(0, 10);
 
   topJobs.forEach((job, i) => {
     console.log(`Job #${i + 1}:`);
