@@ -96,3 +96,29 @@ const response = await fetch("/chat", {
 const data = await response.json();
 console.log(data.response);
 
+const isAgentQuery = (msg) => {
+  return msg.toLowerCase().includes("jobs") || msg.toLowerCase().includes("bewerbung");
+};
+
+chatSend.addEventListener("click", async () => {
+  const message = chatInput.value.trim();
+  if (!message) return;
+  appendMessage("Du", message, "user");
+  chatInput.value = "";
+
+  try {
+    const url = isAgentQuery(message) ? "/agent" : "/chat";
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ input: message, message }),
+    });
+    const data = await res.json();
+    appendMessage("Bot", data.response, "bot");
+  } catch (err) {
+    appendMessage("Bot", "Fehler beim Senden der Nachricht.", "bot");
+    console.error(err);
+  }
+});
+
+

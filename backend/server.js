@@ -8,6 +8,8 @@ import { chat } from "./llm.js";
 import { fileURLToPath } from "url";
 import { getJobsFromMemory } from "./jobs.js";
 import { chatbot } from "./chatbot.js";
+import { createAgentExecutor } from "./agent.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,14 +61,36 @@ app.post("/chat", async (req, res) => {
   }
 
   try {
-    const result = await chatbot.call({ input: message });
-    return res.json({ response: result.response });
+    const result = await chatbot.invoke({ input: message });
+    return res.json({ response: result.output });
   } catch (error) {
     console.error("Chatbot Fehler:", error);
     return res.status(500).json({ response: "Interner Serverfehler." });
   }
 });
 
+
 app.listen(PORT, () => {
   console.log(`Server läuft auf http://localhost:${PORT}`);
 });
+
+let agentExecutor = null;
+
+// Lazy initialize to avoid await at startup
+app.post("/agent", async (req, res) => {
+  const { input } = req.body;
+  if (!input) return res.status(400).json({ response: "Eingabe fehlt." });
+
+  try {
+    if (!agentExecutor) {
+      agentExecutor = await createAgentExecutor();
+    }
+
+    const result = await agentExecutor.call({ input });
+    return res.json({ response: result.output });
+  } catch (err) {
+    console.error("Agent-Fehler:", err);
+    return res.status(500).json({ response: "Agent-Ausführung fehlgeschlagen." });
+  }
+});
+

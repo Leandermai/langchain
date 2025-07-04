@@ -1,21 +1,36 @@
-const { getJobs } = require("./scraper");
-const { generateApplication } = require("./generateApplication");
+simport { initializeAgentExecutorWithOptions, Tool } from "langchain/agents";
+import { chat } from "./llm.js";
+import { scrapeJobs } from "./scraper.js";
+import { matchJobsToSkills } from "./llm.js";
 
-async function main() {
-  console.log("🔍 Lade Jobs...");
-  const jobs = await getJobs();
+const scrapeTool = new Tool({
+  name: "scrape_jobs",
+  description: "Scrapes the latest remote jobs",
+  func: async () => {
+    const jobs = await scrapeJobs();
+    return JSON.stringify(jobs.slice(0, 5));
+  },
+});
 
-  if (jobs.length === 0) {
-    console.log("❌ Keine Jobs gefunden.");
-    return;
-  }
+const filterTool = new Tool({
+  name: "filter_jobs",
+  description: "Filter a list of jobs based on given skills",
+  func: async (input) => {
+    const { jobs, skills } = JSON.parse(input);
+    const filtered = await matchJobsToSkills(jobs, skills);
+    return JSON.stringify(filtered.slice(0, 5));
+  },
+});
 
-  const bestJob = jobs[0]; // Später: Matching-Logik einbauen
-  console.log("✅ Job gefunden:", bestJob.title);
-
-  const letter = await generateApplication(bestJob);
-  console.log("\n📄 Bewerbungsschreiben:\n");
-  console.log(letter);
+export async function createAgentExecutor() {
+  return initializeAgentExecutorWithOptions(
+    [scrapeTool, filterTool],
+    chat,
+    {
+      agentType: "zero-shot-react-description",
+      verbose: true,
+    }
+  );
 }
 
-main();
+
