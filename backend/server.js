@@ -1,10 +1,13 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import dotenv from "dotenv";
+import bodyParser from "body-parser";
 import { scrapeJobs } from "./scraper.js";
 import { chat } from "./llm.js";
-import path from "path";
 import { fileURLToPath } from "url";
-import dotenv from "dotenv";
+import { getJobsFromMemory } from "./jobs.js";
+import { chatbot } from "./chatbot.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,6 +47,23 @@ app.post("/api/bewerbung", async (req, res) => {
     res.json({ letter: response.content });
   } catch (e) {
     res.status(500).json({ error: "Fehler beim Generieren der Bewerbung." });
+  }
+});
+
+//Chatbot
+app.post("/chat", async (req, res) => {
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ response: "Keine Nachricht erhalten." });
+  }
+
+  try {
+    const result = await chatbot.call({ input: message });
+    return res.json({ response: result.response });
+  } catch (error) {
+    console.error("Chatbot Fehler:", error);
+    return res.status(500).json({ response: "Interner Serverfehler." });
   }
 });
 

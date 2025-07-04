@@ -5,31 +5,140 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bewerbungs-Agent</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .main-layout {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .container {
+      flex: 2;
+      max-width: 700px;
+    }
+
+    #chat-section {
+      flex: 1;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      background: #f7f7f7;
+      height: fit-content;
+      min-width: 300px;
+    }
+
+    #chat-log {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .message {
+      margin: 5px 0;
+    }
+
+    .user {
+      color: blue;
+    }
+
+    .bot {
+      color: green;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Bewerbungs-Agent</h1>
-    <form id="bewerber-form">
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" placeholder="Max Mustermann" required />
-      <label for="email">E-Mail:</label>
-      <input type="email" id="email" name="email" placeholder="max@mustermann.de" required />
-      <label for="skills">Fähigkeiten (Komma-getrennt):</label>
-      <input type="text" id="skills" name="skills" placeholder="z.B. JavaScript, React, Node.js" required />
-      <label for="bereich">Gesuchter Bereich:</label>
-      <input type="text" id="bereich" name="bereich" placeholder="z.B. Frontend, Backend" required />
-      <button type="submit">Jobs suchen</button>
-    </form>
-    <div id="jobs-section" style="display:none;">
-      <h2>Gefundene Jobs</h2>
-      <ul id="jobs-list"></ul>
+  <div class="main-layout">
+    <!-- Left: Main form and job content -->
+    <div class="container">
+      <h1>Bewerbungs-Agent</h1>
+
+      <form id="bewerber-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Max Mustermann" required />
+
+        <label for="email">E-Mail:</label>
+        <input type="email" id="email" name="email" placeholder="max@mustermann.de" required />
+
+        <label for="skills">Fähigkeiten (Komma-getrennt):</label>
+        <input type="text" id="skills" name="skills" placeholder="z.B. JavaScript, React, Node.js" required />
+
+        <label for="bereich">Gesuchter Bereich:</label>
+        <input type="text" id="bereich" name="bereich" placeholder="z.B. Frontend, Backend" required />
+
+        <button type="submit">Jobs suchen</button>
+      </form>
+
+      <div id="jobs-section" style="display:none;">
+        <h2>Gefundene Jobs</h2>
+        <ul id="jobs-list"></ul>
+      </div>
+
+      <div id="bewerbung-section" style="display:none;">
+        <h2>Bewerbungsschreiben</h2>
+        <pre id="bewerbung-text"></pre>
+        <button id="pdf-download">Als PDF herunterladen</button>
+      </div>
     </div>
-    <div id="bewerbung-section" style="display:none;">
-      <h2>Bewerbungsschreiben</h2>
-      <pre id="bewerbung-text"></pre>
-      <button id="pdf-download">Als PDF herunterladen</button>
+
+    <!-- Right: Chatbot -->
+    <div id="chat-section">
+      <h2>Chatbot</h2>
+      <div id="chat-log"></div>
+      <input type="text" id="chat-input" placeholder="Frag mich was..." style="width: 100%;" />
+      <button id="chat-send">Senden</button>
     </div>
   </div>
+
   <script src="main.js"></script>
+  <script>
+    const chatLog = document.getElementById("chat-log");
+    const chatInput = document.getElementById("chat-input");
+    const chatSend = document.getElementById("chat-send");
+
+    function appendMessage(sender, text, cls) {
+      const msg = document.createElement("div");
+      msg.className = `message ${cls}`;
+      msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+      chatLog.appendChild(msg);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    chatSend.addEventListener("click", async () => {
+      const message = chatInput.value.trim();
+      if (!message) return;
+      appendMessage("Du", message, "user");
+      chatInput.value = "";
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        appendMessage("Bot", data.response, "bot");
+      } catch (err) {
+        appendMessage("Bot", "Fehler beim Senden der Nachricht.", "bot");
+        console.error(err);
+      }
+    });
+
+    // Optionally: Show chatbot only after form submission
+    document.getElementById("bewerber-form").addEventListener("submit", () => {
+      document.getElementById("chat-section").style.display = "block";
+    });
+  </script>
 </body>
 </html>
+
+
