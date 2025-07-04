@@ -42,7 +42,9 @@ document.addEventListener("DOMContentLoaded", () => {
     jobs.forEach((job, idx) => {
       const li = document.createElement("li");
 
+      // Schöne Anzeige der wichtigsten Felder
       let metaHtml = "";
+      if (job.title) metaHtml += `<b>${job.title}</b><br>`;
       if (job.company) metaHtml += `<b>Firma:</b> ${job.company}<br>`;
       if (job.location) metaHtml += `<b>Standort:</b> ${job.location}<br>`;
       if (job.salary) metaHtml += `<b>Gehalt:</b> ${job.salary}<br>`;
@@ -52,52 +54,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (job.link)
         metaHtml += `<a href='${job.link}' target='_blank'>Zur Ausschreibung</a><br>`;
 
-      let descHtml = "";
-      if (job.aufgaben)
-        descHtml +=
-          `<b>Aufgaben:</b><br><ul>` +
-          job.aufgaben
-            .split(/\n|•|-/)
-            .filter((x) => x.trim())
-            .map((x) => `<li>${x.trim()}</li>`)
-            .join("") +
-          "</ul>";
-      if (job.profil)
-        descHtml +=
-          `<b>Profil:</b><br><ul>` +
-          job.profil
-            .split(/\n|•|-/)
-            .filter((x) => x.trim())
-            .map((x) => `<li>${x.trim()}</li>`)
-            .join("") +
-          "</ul>";
-      if (job.benefits)
-        descHtml +=
-          `<b>Benefits:</b><br><ul>` +
-          job.benefits
-            .split(/\n|•|-/)
-            .filter((x) => x.trim())
-            .map((x) => `<li>${x.trim()}</li>`)
-            .join("") +
-          "</ul>";
-      if (!descHtml)
-        descHtml = job.description || "Keine Beschreibung verfügbar.";
-
       li.innerHTML = `
-        <strong>${job.title}</strong><br>
         ${metaHtml}
-        <button class="show-desc">Jobbeschreibung anzeigen</button>
-        <div class="desc" style="display:none;margin-top:8px;">${descHtml}</div>
-        <button class="apply-btn" style="display:none;margin-top:8px;">Bewerbung schreiben</button>
+        <button class="apply-btn" style="margin-top:8px;">Bewerbung schreiben</button>
       `;
-
-      li.querySelector(".show-desc").onclick = () => {
-        const desc = li.querySelector(".desc");
-        const applyBtn = li.querySelector(".apply-btn");
-        const visible = desc.style.display === "block";
-        desc.style.display = visible ? "none" : "block";
-        applyBtn.style.display = visible ? "none" : "block";
-      };
 
       li.querySelector(".apply-btn").onclick = () =>
         selectJob(job, name, email, profil);
@@ -118,42 +78,28 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("bewerbung-text").textContent =
       data.letter || "Fehler beim Generieren.";
     bewerbungSection.style.display = "block";
-    pdfBtn.style.display = "block";
+    // TXT-Download-Button sichtbar machen
     txtBtn.style.display = "block";
+    // Nach unten scrollen
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+
+    // TXT-Download-Button bleibt erhalten
+    txtBtn.addEventListener("click", () => {
+      const text = document.getElementById("bewerbung-text").textContent;
+      const name = document.getElementById("name").value || "Bewerbung";
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${name.replace(/\s+/g, "_")}_Bewerbung.txt`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    });
   }
-
-  // PDF-Download
-  pdfBtn.addEventListener("click", () => {
-    const text = document.getElementById("bewerbung-text").textContent;
-    const name = document.getElementById("name").value || "Bewerbung";
-    const blob = new Blob([text], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${name.replace(/\s+/g, "_")}_Bewerbung.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
-  });
-
-  txtBtn.addEventListener("click", () => {
-    const text = document.getElementById("bewerbung-text").textContent;
-    const name = document.getElementById("name").value || "Bewerbung";
-    const blob = new Blob([text], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${name.replace(/\s+/g, "_")}_Bewerbung.txt`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
-  });
 
   // Chat
   if (chatForm && chatInput && chatMessages) {
