@@ -4,6 +4,7 @@ import { scrapeJobs } from "./scraper.js";
 import { chat } from "./llm.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import { chatbot } from './chat.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +55,21 @@ app.post("/api/bewerbung", async (req, res) => {
     res.json({ letter: response.content });
   } catch (e) {
     res.status(500).json({ error: "Fehler beim Generieren der Bewerbung." });
+  }
+});
+
+app.post("/api/chat", async (req, res) => {
+  const { message } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: "Message is required." });
+  }
+
+  try {
+    const response = await chatbot.call({ input: message });
+    res.json({ response: response.response || response.text || JSON.stringify(response) });
+  } catch (error) {
+    console.error("Chatbot error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

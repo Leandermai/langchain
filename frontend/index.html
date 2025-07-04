@@ -5,6 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bewerbungs-Agent</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 30px;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      flex: 1;
+    }
+
+    .chat-window {
+      width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      background: #f9f9f9;
+      font-family: sans-serif;
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .chat-messages {
+      overflow-y: auto;
+      flex-grow: 1;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .chat-form input {
+      width: calc(100% - 12px);
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -32,6 +73,16 @@
       <button id="pdf-download">Als PDF herunterladen</button>
     </div>
   </div>
+
+  <!-- Chat Window -->
+  <div class="chat-window">
+    <h3>🤖 Chatbot</h3>
+    <div class="chat-messages" id="chat-messages"></div>
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="chat-input" placeholder="Frage stellen..." required />
+    </form>
+  </div>
+
   <script src="main.js"></script>
 </body>
 </html>

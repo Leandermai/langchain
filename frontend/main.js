@@ -104,3 +104,42 @@ txtBtn.addEventListener('click', () => {
     URL.revokeObjectURL(url);
   }, 100);
 });
+
+document.getElementById('chat-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = document.getElementById('chat-input');
+  const messages = document.getElementById('chat-messages');
+  const userMsg = input.value.trim();
+  if (!userMsg) return;
+
+  // Show user message
+  const userDiv = document.createElement('div');
+  userDiv.textContent = `👤 ${userMsg}`;
+  userDiv.style.marginBottom = '5px';
+  messages.appendChild(userDiv);
+
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+
+  // Call backend (adjust /api/chat to your real route)
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userMsg })
+    });
+    const data = await res.json();
+    const botMsg = data.response || '🤖 Fehler beim Antworten.';
+
+    const botDiv = document.createElement('div');
+    botDiv.textContent = `🤖 ${botMsg}`;
+    botDiv.style.marginBottom = '10px';
+    messages.appendChild(botDiv);
+
+    messages.scrollTop = messages.scrollHeight;
+  } catch (err) {
+    const errorDiv = document.createElement('div');
+    errorDiv.textContent = '❌ Netzwerkfehler beim Chat.';
+    messages.appendChild(errorDiv);
+  }
+});
